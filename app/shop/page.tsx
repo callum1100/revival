@@ -8,14 +8,16 @@ import { supabase } from '@/lib/supabase';
 import { Product } from '@/lib/types';
 import ProductCard from '@/components/products/ProductCard';
 
-const CATEGORIES = ['All', 'Peptides'];
-
-const COMPOUND_FILTERS = [
-  { label: 'GLP Agonists', slugs: ['glp-3r', 'glp-2t'] },
-  { label: 'Repair Peptides', slugs: ['bpc-157-10mg', 'tb-500', 'bpc-157-tb500-combo', 'ghk-cu-50mg'] },
-  { label: 'Growth Hormone', slugs: ['sermorelin-5mg', 'tesa-10mg', 'aod-9604-5mg', 'cjc-1295-ipamorelin'] },
-  { label: 'Nootropic', slugs: ['semax-10mg', 'selank-10mg', 'pt-141-10mg'] },
-  { label: 'Metabolic', slugs: ['nad-plus', 'mots-c-10mg', 'klow-80mg'] },
+const CATEGORIES = [
+  'All',
+  'Peptides',
+  'GLP Agonists',
+  'Repair Peptides',
+  'Growth Hormone',
+  'Nootropic',
+  'Metabolic',
+  'Sexual Health',
+  'SARMs',
 ];
 
 function ShopContent() {
@@ -24,7 +26,6 @@ function ShopContent() {
   const [filtered, setFiltered] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [selectedCompound, setSelectedCompound] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [sortBy, setSortBy] = useState('default');
@@ -48,10 +49,6 @@ function ShopContent() {
     if (selectedCategory !== 'All') {
       result = result.filter((p) => p.category === selectedCategory);
     }
-    if (selectedCompound) {
-      const filter = COMPOUND_FILTERS.find((f) => f.label === selectedCompound);
-      if (filter) result = result.filter((p) => filter.slugs.includes(p.slug));
-    }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter((p) => p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q));
@@ -60,16 +57,15 @@ function ShopContent() {
     else if (sortBy === 'price-desc') result.sort((a, b) => b.price - a.price);
     else if (sortBy === 'name') result.sort((a, b) => a.name.localeCompare(b.name));
     setFiltered(result);
-  }, [products, selectedCategory, selectedCompound, searchQuery, sortBy]);
+  }, [products, selectedCategory, searchQuery, sortBy]);
 
   const clearFilters = () => {
     setSelectedCategory('All');
-    setSelectedCompound(null);
     setSearchQuery('');
     setSortBy('default');
   };
 
-  const hasActiveFilters = selectedCategory !== 'All' || selectedCompound !== null || searchQuery !== '';
+  const hasActiveFilters = selectedCategory !== 'All' || searchQuery !== '';
 
   const FilterSidebar = () => (
     <div className="space-y-6">
@@ -82,25 +78,10 @@ function ShopContent() {
           {CATEGORIES.map((cat) => (
             <button
               key={cat}
-              onClick={() => { setSelectedCategory(cat); setSelectedCompound(null); }}
+              onClick={() => setSelectedCategory(cat)}
               className={`w-full text-left px-3 py-2 rounded text-sm transition-all ${selectedCategory === cat ? 'bg-gold/15 text-gold border border-gold/30 font-semibold' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
             >
               {cat}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="border-t border-[#1e1e1e] pt-5">
-        <h3 className="text-gold font-bold text-xs tracking-[0.2em] uppercase mb-3 pb-2 border-b border-gold/25">Compound Type</h3>
-        <div className="space-y-1.5">
-          {COMPOUND_FILTERS.map((f) => (
-            <button
-              key={f.label}
-              onClick={() => setSelectedCompound(selectedCompound === f.label ? null : f.label)}
-              className={`w-full text-left px-3 py-2 rounded text-sm transition-all ${selectedCompound === f.label ? 'bg-gold/15 text-gold border border-gold/30 font-semibold' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
-            >
-              {f.label}
             </button>
           ))}
         </div>
